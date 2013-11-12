@@ -12,7 +12,7 @@ if [ $(id -u) != "0" ]; then
     exit 1
 fi
 
-back_title="ISPConfig 3 System Installer"
+back_title="Debian 7 System Setup"
 
 questions (){
 
@@ -36,36 +36,16 @@ questions (){
   do
     HOSTNAMEFQDN=$(whiptail --title "Fully Qualified Hostname" --backtitle "$back_title" --inputbox "Please specify a Fully Qualified Hostname" --nocancel 10 50 3>&1 1>&2 2>&3)
   done
+  
   while [ "x$web_server" == "x" ]
   do
     web_server=$(whiptail --title "Web Server" --backtitle "$back_title" --nocancel --radiolist "Select Web Server Software" 10 50 2 "Apache" "(default)" ON "NginX" "" OFF 3>&1 1>&2 2>&3)
   done
-  while [ "x$mail_server" == "x" ]
-  do
-    mail_server=$(whiptail --title "Mail Server" --backtitle "$back_title" --nocancel --radiolist "Select Mail Server Software" 10 50 2 "Dovecot" "(default)" ON "Courier" "" OFF 3>&1 1>&2 2>&3)
-  done
-  while [ "x$sql_server" == "x" ]
-  do
-    sql_server=$(whiptail --title "SQL Server" --backtitle "$back_title" --nocancel --radiolist "Select SQL Server Software" 10 50 2 "MySQL" "(default)" ON "MariaDB" "" OFF 3>&1 1>&2 2>&3)
-  done
-  while [ "x$mysql_pass" == "x" ]
-  do
-    mysql_pass=$(whiptail --title "MySQL Root Password" --backtitle "$back_title" --inputbox "Please specify a MySQL Root Password" --nocancel 10 50 3>&1 1>&2 2>&3)
-  done
+
   if (whiptail --title "Install Quota" --backtitle "$back_title" --yesno "Setup User Quotas?" 10 50) then
     quota=Yes
   else
     quota=No
-  fi
-  if (whiptail --title "Install Mailman" --backtitle "$back_title" --yesno "Setup Mailman?" 10 50) then
-    mailman=Yes
-  else
-    mailman=No
-  fi
-  if (whiptail --title "Install Jailkit" --backtitle "$back_title" --yesno "Setup User Jailkits?" 10 50) then
-    jailkit=Yes
-  else
-    jailkit=No
   fi
 
 }
@@ -80,15 +60,15 @@ echo "$HOSTNAMESHORT" > /etc/hostname
 #Updates server and install commonly used utilities
 cp /etc/apt/sources.list /etc/apt/sources.list.backup
 cat > /etc/apt/sources.list <<EOF
-deb http://ftp.de.debian.org/debian/ wheezy main contrib non-free
-deb-src http://ftp.de.debian.org/debian/ wheezy main contrib non-free
+deb http://ftp.us.debian.org/debian/ wheezy main contrib non-free
+deb-src http://ftp.us.debian.org/debian/ wheezy main contrib non-free
 
 deb http://security.debian.org/ wheezy/updates main contrib non-free
 deb-src http://security.debian.org/ wheezy/updates main contrib non-free
 
 # wheezy-updates, previously known as 'volatile'
-deb http://ftp.de.debian.org/debian/ wheezy-updates main contrib non-free
-deb-src http://ftp.de.debian.org/debian/ wheezy-updates main contrib non-free
+deb http://ftp.us.debian.org/debian/ wheezy-updates main contrib non-free
+deb-src http://ftp.us.debian.org/debian/ wheezy-updates main contrib non-free
 
 # DotDeb
 deb http://packages.dotdeb.org wheezy all
@@ -120,15 +100,10 @@ if [ -f /etc/debian_version ]; then
   debian_install_basic
   debian_install_DashNTP
 
-  if [[ $sql_server == "MariaDB" && $mail_server ==  "Dovecot" ]]; then
-      debian_install_MariaDBDovecot
-  fi
-
   if [ $jailkit == "Yes" ]; then
 		debian_install_Jailkit
 	fi
-  debian_install_SquirrelMail
-  install_ISPConfig
+
 else echo "Unsupported Linux Distribution."
 fi		
 
