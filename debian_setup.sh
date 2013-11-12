@@ -93,25 +93,24 @@ apt-get -y install ntp ntpdate
 } #end function debian_install_DashNTP
 
 debian_install_maria_cluster () {
-apt-get install python-software-properties
+apt-get -y install python-software-properties
 apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db
 add-apt-repository 'deb http://mirror.jmu.edu/pub/mariadb/repo/5.5/debian wheezy main'
 
 apt-get update
-apt-get install mariadb-galera-server galera
+apt-get -y install mariadb-galera-server galera
+
+mysql_secure_installation
 
 } #END CLUSTER
 
 
 #Execute functions#
 if [ -f /etc/debian_version ]; then 
+
   questions
   debian_install_basic
   debian_install_maria_cluster
-
-  if [ $jailkit == "Yes" ]; then
-		#debian_install_Jailkit
-	fi
 
 else echo "Unsupported Linux Distribution."
 fi		
