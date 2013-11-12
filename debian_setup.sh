@@ -6,6 +6,7 @@
 # http://drewclardy.com							                                                          #
 ###############################################################################################
 
+
 # Check if user is root
 if [ $(id -u) != "0" ]; then
     echo "Error: You must be root to run this script, please use the root user to install the software."
@@ -37,9 +38,9 @@ questions (){
     HOSTNAMEFQDN=$(whiptail --title "Fully Qualified Hostname" --backtitle "$back_title" --inputbox "Please specify a Fully Qualified Hostname" --nocancel 10 50 3>&1 1>&2 2>&3)
   done
   
-  while [ "x$web_server" == "x" ]
+  while [ "x$db_server" == "x" ]
   do
-    web_server=$(whiptail --title "Web Server" --backtitle "$back_title" --nocancel --radiolist "Select Web Server Software" 10 50 2 "Apache" "(default)" ON "NginX" "" OFF 3>&1 1>&2 2>&3)
+    db_server=$(whiptail --title "MariaDB Cluster" --backtitle "$back_title" --nocancel --radiolist "Select Web Server Software" 10 50 2 "MariaDB" "(default)" ON 3>&1 1>&2 2>&3)
   done
 
   if (whiptail --title "Install Quota" --backtitle "$back_title" --yesno "Setup User Quotas?" 10 50) then
@@ -79,11 +80,9 @@ wget http://www.dotdeb.org/dotdeb.gpg
 cat dotdeb.gpg | apt-key add -
 apt-get update
 apt-get -y upgrade
-apt-get -y install vim-nox dnsutils unzip 
+apt-get -y install vim-nox dnsutils unzip nano htop git dialog tmux
 
-} #end function debian_install_basic
-
-debian_install_DashNTP (){
+dpkg-reconfigure tzdata
 
 echo "dash dash/sh boolean false" | debconf-set-selections
 dpkg-reconfigure -f noninteractive dash > /dev/null 2>&1
@@ -93,15 +92,25 @@ apt-get -y install ntp ntpdate
 
 } #end function debian_install_DashNTP
 
+debian_install_maria_cluster () {
+apt-get install python-software-properties
+apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db
+add-apt-repository 'deb http://mirror.jmu.edu/pub/mariadb/repo/5.5/debian wheezy main'
+
+apt-get update
+apt-get install mariadb-galera-server galera
+
+} #END CLUSTER
+
 
 #Execute functions#
 if [ -f /etc/debian_version ]; then 
   questions
   debian_install_basic
-  debian_install_DashNTP
+  debian_install_maria_cluster
 
   if [ $jailkit == "Yes" ]; then
-		debian_install_Jailkit
+		#debian_install_Jailkit
 	fi
 
 else echo "Unsupported Linux Distribution."
